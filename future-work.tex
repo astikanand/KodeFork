@@ -1,0 +1,8 @@
+\chapter{Conclusion and Future Work}
+
+We have designed and implemented a natural language query
+interface for databases which is interactive. Given a natural language
+input we first translate it into a SQL statement and
+then evaluate it against the underlying relational database. To achieve better output and accuracy the system shows each step of transformation of input to the user. If there are ambiguities, then for each ambiguity, the system outputs multiple top ranked interpretations so that the user can choose from them. The query mechanism described in this report has been implemented and the actual user experience has been gathered. While using the system the users are
+able to query tasks satisfactorily.\\
+In our current implementation we have only handled cases where database attributes are single words. It has to be enhanced so that we can use multiple word attribute data. A better scoring algorithm has to be designed to evaluate parse tree. We have applied a brute force approach in enumerating all the possible valid parse trees, this process is slow. Node mapping can be improved by using supervised data mining and classification techniques. Work has to be done to improve human interaction, helping the user understand the query output and to decrease the amount of human interaction.

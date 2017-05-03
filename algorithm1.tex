@@ -1,0 +1,218 @@
+
+\begin{algorithm}[Q]
+\SetAlgoLined
+
+
+
+
+\SetKwInOut{Input}{input}\SetKwInOut{Output}{output}
+\Input{A Database \textbf{db} }
+\Output{Schema Graph \textbf{S(V,E)} representing \textbf{db}}
+\BlankLine
+
+
+
+
+\textbf{dbSchema} $\leftarrow$ \emph{extract schema from } \textbf{db}
+
+\textbf{keyRelations} $\leftarrow$ \emph{ extract primary key - foreign key relations from } \textbf{dbSchema} 
+
+\textbf{tables} $\leftarrow$ \emph{ extract table names from } \textbf{dbSchema} \;
+
+\ForEach{ \emph{tableName} \in \textbf{tables}}{
+    
+    \textbf{\emph{columns}}\emph{[tableName]} $\leftarrow$  \emph{extract all attributes of tableName from } \textbf{dbSchema}
+ 
+}
+
+\textbf{S(V,E)} $\leftarrow \phi$
+
+\ForEach{ \emph{tableName} \in \textbf{tables}}{
+    \textbf{S(V)}.add(makeRelationNode(tableName))
+    
+  
+
+}
+
+
+\ForEach{ \emph{(FK,PK)} \in \textbf{tables}}{
+    \textbf{S(E)}.addDirectedEdge(FK, PK)
+}
+
+\ForEach{colName \in \textbf{columns}[tableName]}{
+        \textbf{S(V)}.addAttributeNode(colName)
+    }
+
+\ForEach{ \emph{tableName} \in \textbf{tables}}{
+
+    \ForEach{colName $\in$ \textbf{columns}[tableName]}{
+        \textbf{S(E)}.addDirectedEdge(tableName, colName)\\
+        \textbf{\emph{sampleData}}\emph{[columnName]} $\leftarrow$ \emph{extract \emph{t} samples from columnName of tableName using } \textbf{db}  
+    }
+     
+}
+\textbf{Return} \textbf{\emph{S(V,E)}}
+ \caption{Schema Graph Generation}
+\end{algorithm}
+
+
+
+
+
+
+\begin{algorithm}[H]
+\SetAlgoLined
+
+
+
+
+\SetKwInOut{Input}{input}\SetKwInOut{Output}{output}
+\Input{A parse tree from stanford parser \textbf{PT} }
+\Output{Mapped Parse Tree}
+\BlankLine
+
+\ForEach{ \emph{node} $\in$ \textbf{PT}}{\If{node.value $\in$ keywords}{ 
+        node.type = node.value \\
+        \emph{continue}
+    }
+    
+    \textbf{choicesToMap} $\leftarrow$ \emph{calculateChoices(node.value)}\\
+    
+    \textbf{userChoice} $\leftarrow$ ask user to choose from a set of choices $\in$ \textbf{choicesToMap } ordered in decreasing value of relevance \\
+    node.type = userChoice
+    
+    
+}
+
+
+\textbf{Return} \textbf{PT}
+
+
+ \caption{Node Mapping}
+\end{algorithm}
+
+
+
+
+
+\begin{algorithm}[Y]
+\SetAlgoLined
+
+
+
+
+\SetKwInOut{Input}{input}\SetKwInOut{Output}{output}
+\Input{A parse tree node \textbf{node}, \textbf{schema graph S}, \textbf{WordNet}  }
+\Output{List of mapping choices}
+\BlankLine
+
+\textbf{choices} $\leftarrow$ ()\\
+\ForEach{colName $\in$ \textbf{S.columns}}{
+    score $\leftarrow$ calculateScore(colName, \textbf{node.value})
+    \textbf{choices}.append((colName,score,NN))
+}
+
+\ForEach{tableName \in \textbf{S.tables}}{
+    score = $\leftarrow$ calculateScore(tableName, \textbf{node.value})
+    \textbf{choices}.append((tableName,score,NN))
+}
+
+\ForEach{colName \in \textbf{S.columns}}{
+    \textbf{score} $\leftarrow$ \emph{1}\\
+    \ForEach{\emph{data} $\in$ \textbf{S.sampleData}[columns]}{
+        \textbf{score}*=\textbf{WordNet.similarity}(node.value,data)
+        \textbf{choices}.append((colName,score,NV))
+    }
+    
+}
+\textbf{Return} \textbf{\emph{choices}}
+ \caption{calculateChoices()}
+\end{algorithm}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\begin{algorithm}[J]
+\SetAlgoLined
+\SetKwInOut{Input}{input}\SetKwInOut{Output}{output}
+
+
+\Input{A parse tree \textbf{parseTree}  }
+\Output{A list of relevant parse trees}
+
+
+\BlankLine
+
+\textbf{results} $\leftarrow$ \phi\\
+\textbf{PriorityQ} $\leftarrow$ \phi\\
+PriorityQ.insert(\textbf{parseTree})\\
+\While{PriorityQ $\ne$ \phi}{
+    Ptree = PriorityQ.remove()\\
+    treeList = adjust(Ptree)\\
+    \ForEach{tree $\in$ \emph{treeList}}{
+        \If{tree.edit \textless t }{
+            tree.edit += 1\\
+            \If{evaluateScore(tree) $\ge$ evaluateScore(Ptree)}{
+                PriorityQ.insert(tree')\\
+                \If{tree is valid}{
+                    \textbf{results}.append(tree)
+                }
+            }
+        }
+    }
+}
+\textbf{Return} \textbf{\emph{results}}
+
+ \caption{Tree Rearrangement}
+\end{algorithm}
+
+
+
+
+
+
+
+\begin{algorithm}[K]
+\SetAlgoLined
+\SetKwInOut{Input}{input}\SetKwInOut{Output}{output}
+
+
+\Input{A parse tree \textbf{parseTree}  }
+\Output{A list parse trees }
+
+
+\BlankLine
+
+\textbf{adjustedTrees} $\leftarrow$ \phi\\
+
+\ForEach{\emph{node} $\in$ \textbf{\emph{parseTree}}}{
+    \ForEach{child in \emph{node}}{
+        \textbf{\emph{adjustedTrees}}.add(swap \emph{node} and child)\\
+        \textbf{\emph{adjustedTrees}}.add(make \emph{node} its sibling)\\
+        \textbf{\emph{adjustedTrees}}.add(make siblings the child of \emph{node})\\
+        \textbf{\emph{adjustedTrees}}.add(swap \emph{node's} children)\\
+    }
+    
+}
+
+\textbf{Return} \textbf{\emph{adjustedTrees}}
+
+ \caption{adjust()}
+\end{algorithm}
+
